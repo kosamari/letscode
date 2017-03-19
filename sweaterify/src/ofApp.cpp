@@ -8,7 +8,7 @@ void ofApp::setup(){
     vResolution = vHeight / vWidth;
     
     // knit canvas size
-    knitWidth = 1240;
+    knitWidth = 800;
     knitHeight = knitWidth * vResolution;
     
     // video preview on screen
@@ -28,6 +28,8 @@ void ofApp::setup(){
     
     // draw  stitch fbo
     drawStsFbo();
+    
+    bSetupYet = true;
 }
 
 //--------------------------------------------------------------
@@ -61,8 +63,11 @@ void ofApp::drawStsFbo(){
     
     baseSts.allocate(static_cast<int>(sWidth), static_cast<int>(sHeight) + static_cast<int>(dip), GL_RGBA);
     baseSts.begin();
-    ofSetColor(50, 204, 183, 255);
+    ofSetColor(50, 204, 183);
     ofFill();
+    knit(0, 0);
+    ofSetColor(42, 178, 160);
+    ofNoFill();
     knit(0, 0);
     baseSts.end();
     
@@ -70,6 +75,9 @@ void ofApp::drawStsFbo(){
     accentSts.begin();
     ofSetColor(242, 248, 255);
     ofFill();
+    knit(0, 0);
+    ofSetColor(227, 233, 240);
+    ofNoFill();
     knit(0, 0);
     accentSts.end();
 }
@@ -127,18 +135,15 @@ void ofApp::knit(int x, int y) {
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-    knitWidth = w - previewWidth;
-    knitHeight = (w - previewWidth) * vResolution;
-    sWidth = (w - previewWidth) / sts;
-    sHeight = (w - previewWidth) * vResolution / rows;
-    dip = sHeight / 2;
-
-// If I try to re-genereate fbo based on new stitch size, the code throws following error
-//    [ error ] ofFbo: width and height have to be more than 0
-//    [ error ] ofTexture: allocate(): ofTextureData has 0 width and/or height: -2.14748e+09x0
-//    [ error ] ofFbo: FRAMEBUFFER_INCOMPLETE_ATTACHMENT
     
-//    drawStsFbo();
+    if (bSetupYet == true) {
+        knitWidth = w - previewWidth;
+        knitHeight = (w - previewWidth) * vResolution;
+        sWidth = (w - previewWidth) / sts;
+        sHeight = (w - previewWidth) * vResolution / rows;
+        dip = sHeight / 2;
+        drawStsFbo();
+    }
 }
 
 
