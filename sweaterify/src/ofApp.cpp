@@ -20,16 +20,28 @@ void ofApp::setup(){
     ofBackground(0);
     
     // knitting vars for stitch shape
-    sts = 84;
-    rows = 84 * vResolution;
+    sts = 100;
+    rows = 100 * vResolution;
     sWidth = knitWidth / sts;
     sHeight = knitWidth * vResolution / rows;
     dip = sHeight / 2;
     
+    // colors
+    baseColor = ofColor(254, 43, 117);
+    accentColor = ofColor(242, 248, 255);
+    baseColorDim = ofColor(254, 43, 117, 200);
+    accentColorDim = ofColor(242, 248, 255, 200);
+
     // draw  stitch fbo
     drawStsFbo();
     
+    // still photo fbo
+    cout << knitWidth << endl;
+    stillphoto.allocate(static_cast<int>(knitWidth), static_cast<int>(knitHeight), GL_RGBA);
+
+    
     bSetupYet = true;
+    stillfbo = false;
 }
 
 //--------------------------------------------------------------
@@ -42,46 +54,83 @@ void ofApp::update(){
 void ofApp::draw(){
     grabber.draw(0,0, previewWidth, previewWidth *  vResolution);
 
-    for (int x = 0; x < knitWidth; x += sWidth){
-        for (int y = 0; y < knitHeight; y += sHeight){
-
-            float color = dither(grabber.getPixels().getColor(ofMap(x, 0, knitWidth, 0, vWidth), ofMap(y, 0, knitHeight, 0, vHeight)).getBrightness(), x/sWidth, y/sHeight);
-//            float color = threshold(grabber.getPixels().getColor(ofMap(x, 0, knitWidth, 0, vWidth), ofMap(y, 0, knitHeight, 0, vHeight)).getBrightness());
-            if(color == 0) {
-                // base color
-                baseSts.draw(previewWidth + x, y);
-            } else {
-                // accent color
-                accentSts.draw(previewWidth + x, y);
-            }
-            
+    // Realtime update
+//    drawFabric(baseStsDim, accentStsDim);
+//    stillphoto.draw(previewWidth, 0);
+    
+    // Interval between live and still
+    int t = ofGetElapsedTimeMillis();
+    if (t % 6000 > 3000) {
+        if (!stillfbo) {
+            drawFabric(baseSts, accentSts);
+            stillfbo = true;
         }
+        stillphoto.draw(previewWidth, 0);
+    } else {
+        if (stillfbo) {
+            stillfbo = false;
+        }
+        drawFabric(baseStsDim, accentStsDim);
+        stillphoto.draw(previewWidth, 0);
     }
 }
 
+void ofApp::drawFabric(ofFbo b, ofFbo a){
+    stillphoto.begin();
+    for (int x = 0; x < knitWidth; x += sWidth){
+        for (int y = 0; y < knitHeight; y += sHeight){
+            float color = dither(grabber.getPixels().getColor(ofMap(x, 0, knitWidth, 0, vWidth), ofMap(y, 0, knitHeight, 0, vHeight)).getBrightness(), x/sWidth, y/sHeight);
+//            float color = threshold(grabber.getPixels().getColor(ofMap(x, 0, knitWidth, 0, vWidth), ofMap(y, 0, knitHeight, 0, vHeight)).getBrightness());
+            if(color == 0) {
+                b.draw(x, y);
+            } else {
+                a.draw(x, y);
+            }
+        }
+    }
+    stillphoto.end();
+}
+
 void ofApp::drawStsFbo(){
-    
     baseSts.allocate(static_cast<int>(sWidth), static_cast<int>(sHeight) + static_cast<int>(dip), GL_RGBA);
     baseSts.begin();
-//    ofSetColor(29, 161, 242);
-    ofSetColor(254, 43, 117);
+    ofSetColor(baseColor);
     ofFill();
     knit(0, 0);
-//    ofSetColor(19, 151, 232);
-    ofSetColor(234, 13, 87);
+    ofSetColor(baseColorDim);
     ofNoFill();
     knit(0, 0);
     baseSts.end();
     
     accentSts.allocate(static_cast<int>(sWidth), static_cast<int>(sHeight) + static_cast<int>(dip), GL_RGBA);
     accentSts.begin();
-    ofSetColor(242, 248, 255);
+    ofSetColor(accentColor);
     ofFill();
     knit(0, 0);
-    ofSetColor(227, 233, 240);
+    ofSetColor(accentColorDim);
     ofNoFill();
     knit(0, 0);
     accentSts.end();
+    
+    baseStsDim.allocate(static_cast<int>(sWidth), static_cast<int>(sHeight) + static_cast<int>(dip), GL_RGBA);
+    baseStsDim.begin();
+    ofSetColor(baseColorDim);
+    ofFill();
+    knit(0, 0);
+    ofSetColor(baseColorDim);
+    ofNoFill();
+    knit(0, 0);
+    baseStsDim.end();
+    
+    accentStsDim.allocate(static_cast<int>(sWidth), static_cast<int>(sHeight) + static_cast<int>(dip), GL_RGBA);
+    accentStsDim.begin();
+    ofSetColor(accentColorDim);
+    ofFill();
+    knit(0, 0);
+    ofSetColor(accentColorDim);
+    ofNoFill();
+    knit(0, 0);
+    accentStsDim.end();
 }
 
 float ofApp::threshold(float brightness) {
@@ -102,7 +151,7 @@ float ofApp::dither(float brightness, int x, int y){
         48,  176, 16,  144,
         240, 112,  208, 80
     };
-    
+
     if (brightness > bayermatrix[((x % 4) * 4) + (y % 4)]) {
         c = 1;
     } else {
@@ -144,6 +193,7 @@ void ofApp::windowResized(int w, int h){
         sHeight = (w - previewWidth) * vResolution / rows;
         dip = sHeight / 2;
         drawStsFbo();
+        stillphoto.allocate(static_cast<int>(knitWidth), static_cast<int>(knitHeight), GL_RGBA);
     }
 }
 

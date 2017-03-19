@@ -23,7 +23,9 @@ class ofApp : public ofBaseApp{
     
         bool bSetupYet = false;
     
+        void drawFabric(ofFbo b, ofFbo a);
         void drawStsFbo();
+    
         void knit(int x, int y);
         float dither(float brightness, int x, int y);
         float threshold(float brightness);
@@ -39,8 +41,20 @@ class ofApp : public ofBaseApp{
         float knitWidth;
         float knitHeight;
     
+        int frames;
+        bool stillfbo;
+    
+        ofColor baseColor;
+        ofColor accentColor;
+        ofColor baseColorDim;
+        ofColor accentColorDim;
+    
+        ofFbo stillphoto;
         ofFbo baseSts;
         ofFbo accentSts;
+        ofFbo baseStsDim;
+        ofFbo accentStsDim;
 
     ofVideoGrabber grabber;
+
 };
