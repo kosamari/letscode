@@ -20,8 +20,8 @@ void ofApp::setup(){
     ofBackground(0);
     
     // knitting vars for stitch shape
-    sts = 100;
-    rows = 100 * vResolution;
+    sts = 84;
+    rows = 84 * vResolution;
     sWidth = knitWidth / sts;
     sHeight = knitWidth * vResolution / rows;
     dip = sHeight / 2;
@@ -45,8 +45,8 @@ void ofApp::draw(){
     for (int x = 0; x < knitWidth; x += sWidth){
         for (int y = 0; y < knitHeight; y += sHeight){
 
-//            float color = dither(grabber.getPixels().getColor(ofMap(x, 0, knitWidth, 0, vWidth), ofMap(y, 0, knitHeight, 0, vHeight)).getBrightness(), x/sWidth, y/sHeight);
-            float color = threshold(grabber.getPixels().getColor(ofMap(x, 0, knitWidth, 0, vWidth), ofMap(y, 0, knitHeight, 0, vHeight)).getBrightness());
+            float color = dither(grabber.getPixels().getColor(ofMap(x, 0, knitWidth, 0, vWidth), ofMap(y, 0, knitHeight, 0, vHeight)).getBrightness(), x/sWidth, y/sHeight);
+//            float color = threshold(grabber.getPixels().getColor(ofMap(x, 0, knitWidth, 0, vWidth), ofMap(y, 0, knitHeight, 0, vHeight)).getBrightness());
             if(color == 0) {
                 // base color
                 baseSts.draw(previewWidth + x, y);
@@ -63,10 +63,12 @@ void ofApp::drawStsFbo(){
     
     baseSts.allocate(static_cast<int>(sWidth), static_cast<int>(sHeight) + static_cast<int>(dip), GL_RGBA);
     baseSts.begin();
-    ofSetColor(50, 204, 183);
+//    ofSetColor(29, 161, 242);
+    ofSetColor(254, 43, 117);
     ofFill();
     knit(0, 0);
-    ofSetColor(42, 178, 160);
+//    ofSetColor(19, 151, 232);
+    ofSetColor(234, 13, 87);
     ofNoFill();
     knit(0, 0);
     baseSts.end();
@@ -135,7 +137,6 @@ void ofApp::knit(int x, int y) {
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-    
     if (bSetupYet == true) {
         knitWidth = w - previewWidth;
         knitHeight = (w - previewWidth) * vResolution;
