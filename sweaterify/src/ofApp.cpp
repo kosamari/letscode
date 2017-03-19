@@ -8,7 +8,7 @@ void ofApp::setup(){
     vResolution = vHeight / vWidth;
     
     // knit canvas size
-    knitWidth = 800;
+    knitWidth = 1240;
     knitHeight = knitWidth * vResolution;
     
     // video preview on screen
@@ -20,11 +20,14 @@ void ofApp::setup(){
     ofBackground(0);
     
     // knitting vars for stitch shape
-    sts = 80;
-    rows = 80 * vResolution;
+    sts = 100;
+    rows = 100 * vResolution;
     sWidth = knitWidth / sts;
     sHeight = knitWidth * vResolution / rows;
     dip = sHeight / 2;
+    
+    // draw  stitch fbo
+    drawStsFbo();
 }
 
 //--------------------------------------------------------------
@@ -44,19 +47,31 @@ void ofApp::draw(){
             float color = threshold(grabber.getPixels().getColor(ofMap(x, 0, knitWidth, 0, vWidth), ofMap(y, 0, knitHeight, 0, vHeight)).getBrightness());
             if(color == 0) {
                 // base color
-                ofSetColor(50, 204, 183);
+                baseSts.draw(previewWidth + x, y);
             } else {
                 // accent color
-                ofSetColor(242, 248, 255);
+                accentSts.draw(previewWidth + x, y);
             }
-            ofFill();
-            knit(previewWidth + x, y);
-// OUTLINE the knit stitch shape
-//            ofNoFill();
-//            ofSetColor(80);
-//            knit(previewWidth + x, y);
+            
         }
     }
+}
+
+void ofApp::drawStsFbo(){
+    
+    baseSts.allocate(static_cast<int>(sWidth), static_cast<int>(sHeight) + static_cast<int>(dip), GL_RGBA);
+    baseSts.begin();
+    ofSetColor(50, 204, 183, 255);
+    ofFill();
+    knit(0, 0);
+    baseSts.end();
+    
+    accentSts.allocate(static_cast<int>(sWidth), static_cast<int>(sHeight) + static_cast<int>(dip), GL_RGBA);
+    accentSts.begin();
+    ofSetColor(242, 248, 255);
+    ofFill();
+    knit(0, 0);
+    accentSts.end();
 }
 
 float ofApp::threshold(float brightness) {
@@ -88,6 +103,7 @@ float ofApp::dither(float brightness, int x, int y){
 }
 
 void ofApp::knit(int x, int y) {
+    y += dip/2;
     // right side of "V" in knit stitch graphics
     ofBeginShape();
     ofVertex(x + (sWidth/2), y + dip);
@@ -116,6 +132,13 @@ void ofApp::windowResized(int w, int h){
     sWidth = (w - previewWidth) / sts;
     sHeight = (w - previewWidth) * vResolution / rows;
     dip = sHeight / 2;
+
+// If I try to re-genereate fbo based on new stitch size, the code throws following error
+//    [ error ] ofFbo: width and height have to be more than 0
+//    [ error ] ofTexture: allocate(): ofTextureData has 0 width and/or height: -2.14748e+09x0
+//    [ error ] ofFbo: FRAMEBUFFER_INCOMPLETE_ATTACHMENT
+    
+//    drawStsFbo();
 }
 
 

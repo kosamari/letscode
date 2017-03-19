@@ -21,7 +21,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
-    
+        void drawStsFbo();
         void knit(int x, int y);
         float dither(float brightness, int x, int y);
         float threshold(float brightness);
@@ -36,6 +36,9 @@ class ofApp : public ofBaseApp{
         float vHeight;
         float knitWidth;
         float knitHeight;
+    
+        ofFbo baseSts;
+        ofFbo accentSts;
 
     ofVideoGrabber grabber;
 };
